@@ -105,8 +105,10 @@ $services = Get-Service -ErrorAction SilentlyContinue |
   Sort-Object Status, StartType, DisplayName
 $autoStoppedCount = @($services | Where-Object { $_.StartType -eq 'Automatic' -and $_.Status -ne 'Running' }).Count
 
-$biggestMovable = $sortedFolders | Where-Object { $_.Category -eq 'game library — move via launcher only' } | Select-Object -First 1
-$otherDrive = $driveSummary | Sort-Object FreeGB -Descending | Select-Object -First 1 -ExpandProperty Drive
+$fullestDrive = $driveSummary | Sort-Object PercentFree | Select-Object -First 1 -ExpandProperty Drive
+$otherDrive = $driveSummary | Where-Object { $_.Drive -ne $fullestDrive } | Sort-Object FreeGB -Descending | Select-Object -First 1 -ExpandProperty Drive
+if (-not $otherDrive) { $otherDrive = $fullestDrive }
+$biggestMovable = $sortedFolders | Where-Object { $_.Category -eq 'game library — move via launcher only' -and $_.Path.StartsWith("$fullestDrive\") } | Select-Object -First 1
 
 $lines = [System.Collections.Generic.List[string]]::new()
 $lines.Add("# Full system audit — disk + services")
@@ -139,10 +141,11 @@ $lines.Add('Full service list omitted from this report for length -- re-run `Get
 $lines.Add("")
 $lines.Add("## How to act on this")
 $lines.Add("")
+$lines.Add("- $fullestDrive\ is the fullest drive -- that's the one that needs space freed, not necessarily the biggest folder overall.")
 if ($biggestMovable) {
-  $lines.Add("- Biggest clean win: **$($biggestMovable.Path)** ($($biggestMovable.SizeGB) GB) -- move via its launcher's own relocate feature to $otherDrive\, never by cut/paste.")
+  $lines.Add("- Biggest clean win on $fullestDrive\: **$($biggestMovable.Path)** ($($biggestMovable.SizeGB) GB) -- move via its launcher's own relocate feature to $otherDrive\, never by cut/paste.")
 } else {
-  $lines.Add("- No obvious game-library folder found over $MinReportGB GB -- check the 'review' rows above directly.")
+  $lines.Add("- No obvious game-library folder found on $fullestDrive\ over $MinReportGB GB -- check the highest-depth 'review' rows under $fullestDrive\ above directly; the deepest-nested one is usually the real answer.")
 }
 $lines.Add("- Rows marked **system**: leave alone entirely.")
 $lines.Add("- Rows marked **review** or **review (nested)**: the deepest-nested large folder under each is usually the real answer -- check the highest-depth rows first, they're the most specific.")
