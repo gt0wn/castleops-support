@@ -42,6 +42,7 @@ $files = @(
   'Invoke-GamingEndpointAudit.ps1',
   'Invoke-GamingSafeRemediation.ps1',
   'Invoke-GamingServicesPackageReset.ps1',
+  'Invoke-GpuOverlayDiagnostic.ps1',
   'Invoke-SteamLibraryValidation.ps1',
   'Invoke-TempProfileDiagnostic.ps1',
   'New-GamingRemediationPlan.ps1',
@@ -138,6 +139,7 @@ Saves `TempProfileDiagnostic.md`.
 | `Invoke-SteamLibraryValidation.ps1` | Cross-checks Steam's own manifests against what's actually on disk, across every registered library folder. Catches a broken move. |
 | `Invoke-TempProfileDiagnostic.ps1` | Read-only root-cause check for a Windows "temporary profile" problem — free space, profile registry state, event log errors. |
 | `Invoke-GamingServicesPackageReset.ps1` | Resets the Gaming Services app package — the real fix for recurring `GamingServicesUI` `0xC0000374` crashes. `-Execute` plus typed approval required; refuses to run if a game is active. |
+| `Invoke-GpuOverlayDiagnostic.ps1` | Reports GPU driver version/date and known overlay software (Discord, MSI Afterburner, etc.) for `DXGI_ERROR_DEVICE_HUNG` troubleshooting. Can disable Xbox Game Bar's overlay specifically — `-Execute` plus typed approval required. |
 
 ## Output
 
