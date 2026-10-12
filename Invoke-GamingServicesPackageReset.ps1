@@ -58,9 +58,11 @@ try {
     $activeGames = @($processes | Where-Object { $_.Name -match $gameRx })
 
     if ($activeGames.Count -gt 0) {
+      $matchedList = @($activeGames | ForEach-Object { "$($_.Name) (PID $($_.ProcessId))" })
       $state.status = 'blocked-game-active'
-      $state.notes = @('Detected an active protected game executable; no reset attempted.', 'Close games normally first.')
-      Write-Warning "A game appears active. No changes made."
+      $state.matchedProcesses = $matchedList
+      $state.notes = @("Detected active process(es) matching the protected-game pattern: $($matchedList -join ', '). No reset attempted.", 'Close games normally first.')
+      Write-Warning "A game appears active: $($matchedList -join ', '). No changes made."
     }
     elseif (-not $Execute) {
       $state.status = 'plan-only'
