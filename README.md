@@ -13,7 +13,7 @@ disk usage by folder, and Windows services status. Write plain local report file
 
 **Never:** modify files, change settings, start/stop services, delete anything,
 read the *contents* of your documents/photos/saves (only names, sizes, paths,
-dates), or send anything anywhere on their own. Two scripts have real side
+dates), or send anything anywhere on their own. Three scripts have real side
 effects and are gated behind an explicit flag plus a typed confirmation before
 they do anything — everything else is look-only.
 
@@ -41,6 +41,7 @@ $files = @(
   'Invoke-GamingAuditBundle.ps1',
   'Invoke-GamingEndpointAudit.ps1',
   'Invoke-GamingSafeRemediation.ps1',
+  'Invoke-GamingServicesPackageReset.ps1',
   'Invoke-SteamLibraryValidation.ps1',
   'Invoke-TempProfileDiagnostic.ps1',
   'New-GamingRemediationPlan.ps1',
@@ -92,6 +93,25 @@ move that silently broke Steam's bookkeeping. Does **not** confirm a game
 actually launches; that still needs a human to click Play. Saves
 `SteamLibraryValidation.md`.
 
+### Gaming Services package reset (fixes recurring 0xC0000374 crashes)
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\Invoke-GamingServicesPackageReset.ps1
+```
+
+If `GamingServicesUI` keeps crashing with event `0xC0000374`
+(`STATUS_HEAP_CORRUPTION`) in Windows' Application log, that's a corrupted
+Gaming Services app package, not a GPU/driver issue. With no flag, shows a
+`-WhatIf` preview only — nothing changes. To actually reset it:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\Invoke-GamingServicesPackageReset.ps1 -Execute
+```
+
+Requires typing an exact approval phrase, refuses to run if a recognized game
+process is active, and clears only the package's own cache/state — never your
+games, saves, or other app data.
+
 ### Temporary profile diagnostic
 
 ```powershell
@@ -109,7 +129,7 @@ Saves `TempProfileDiagnostic.md`.
 |---|---|
 | `Invoke-GamingEndpointAudit.ps1` | Hardware/OS/GPU/driver inventory + categorized recent crash-signature events. Calls the planner automatically at the end. |
 | `New-GamingRemediationPlan.ps1` | Turns the assessment into a prioritized, human-approval-gated action list. Never executes anything itself. |
-| `Invoke-GamingSafeRemediation.ps1` | The only script with real side effects — two reversible actions (refresh Xbox app launcher state, restart Gaming Services), both require `-Execute` plus typing an exact approval phrase, both refuse to run if a game process is active. |
+| `Invoke-GamingSafeRemediation.ps1` | Two reversible actions (refresh Xbox app launcher state, restart Gaming Services) — both require `-Execute` plus typing an exact approval phrase, both refuse to run if a game process is active. |
 | `Register-GamingAuditTask.ps1` | Optional: installs a daily local-only scheduled task running the read-only collector. No admin, no network action. |
 | `Invoke-GamingAuditBundle.ps1` | Runs the collector, then zips the four sanitized output files (assessment, report, plan x2) with a SHA-256 manifest — the one most people actually want to run. |
 | `Invoke-DiskSpaceBreakdown.ps1` | Read-only top-level disk usage breakdown for one drive, flags game-library folders as safe to relocate via their launcher. |
@@ -117,6 +137,7 @@ Saves `TempProfileDiagnostic.md`.
 | `Invoke-FolderBreakdown.ps1` | Same recursive logic as the full audit, scoped to one folder you specify — fast, deep drill-down instead of a whole-drive scan. |
 | `Invoke-SteamLibraryValidation.ps1` | Cross-checks Steam's own manifests against what's actually on disk, across every registered library folder. Catches a broken move. |
 | `Invoke-TempProfileDiagnostic.ps1` | Read-only root-cause check for a Windows "temporary profile" problem — free space, profile registry state, event log errors. |
+| `Invoke-GamingServicesPackageReset.ps1` | Resets the Gaming Services app package — the real fix for recurring `GamingServicesUI` `0xC0000374` crashes. `-Execute` plus typed approval required; refuses to run if a game is active. |
 
 ## Output
 
